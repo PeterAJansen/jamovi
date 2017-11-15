@@ -6,6 +6,7 @@ from . import csv
 from . import omv
 from . import blank
 from . import jasp
+from . import hdf5
 
 
 def read(data, path, is_example=False):
@@ -23,6 +24,8 @@ def read(data, path, is_example=False):
         csv.read(data, path)
     elif ext == '.jasp':
         jasp.read(data, path)
+    elif ext == '.h5':
+        hdf5.read(data, path)
     else:
         omv.read(data, path, is_example)
 

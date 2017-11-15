@@ -590,7 +590,8 @@ var BackstageModel = Backbone.Model.extend({
             { description: 'All Data files (*.omv, *.csv, *.txt, *.jasp)', extensions: ['omv', 'csv', 'txt', 'jasp']},
             { description: 'jamovi files (*.omv)', extensions: ['omv'] },
             { description: 'CSV (Comma delimited) (*.csv, *.txt)', extensions: ['csv', 'txt'] },
-            { description: 'JASP files (*.jasp)', extensions: ['jasp'] }
+            { description: 'JASP files (*.jasp)', extensions: ['jasp'] },
+            { description: 'hdf5 files (*.h5)', extensions: ['h5'] },
         ];
         this._pcListModel.on('dataSetOpenRequested', this.tryOpen, this);
         this._pcListModel.on('browseRequested', this.tryBrowse, this);
