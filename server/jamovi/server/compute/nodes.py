@@ -215,11 +215,7 @@ class BoolOp(ast.BoolOp):
 
     @property
     def has_levels(self):
-        return True
-
-    @property
-    def levels(self):
-        return ((0, 'FALSE'), (1, 'TRUE'))
+        return False
 
     def _add_node_parent(self, node):
         self._node_parents.append(node)
@@ -520,7 +516,11 @@ class Compare(ast.Compare):
 
     @property
     def has_levels(self):
-        return False
+        return True
+
+    @property
+    def levels(self):
+        return ((0, '🔴'), (1, '✅'))
 
     def _add_node_parent(self, node):
         self._node_parents.append(node)

@@ -1,12 +1,14 @@
 
 
 from jamovi.core import MeasureType
+from collections import OrderedDict
 
 
 class FuncMeta:
     def __init__(self):
         self.is_row_wise = False
         self.is_column_wise = False
+        self._parent = None
         self._measure_type = MeasureType.CONTINUOUS
         self._returns = [ ]
 
@@ -49,10 +51,40 @@ class FuncMeta:
 
         return mt
 
+    def determine_levels(self, args):
+        if len(self._returns) == 0:
+            return [ ]
+        if len(args) == 0:
+            return [ ]
+        if determine_m_type(args) is not MeasureType.NOMINAL_TEXT:
+            return [ ]
+
+        level_use = OrderedDict()
+
+        types = [None] * len(self._returns)
+        for i in range(len(self._returns)):
+            arg_i = self._returns[i]
+            if arg_i < len(args):
+                arg = args[arg_i]
+                if not arg.has_levels:
+                    continue
+                for level in arg.levels:
+                    level_use[level[1]] = 0
+
+        for value in self._parent.fvalues():
+            if value in level_use:
+                level_use[value] += 1
+
+        used_only = filter(lambda k: level_use[k] > 0, level_use)
+        levels = map(lambda level: (level, level), used_only)
+        
+        return levels
+
 
 def _meta(func):
     if not hasattr(func, 'meta'):
         func.meta = FuncMeta()
+        func.meta._parent = func
     return func.meta
 
 
