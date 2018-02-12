@@ -340,7 +340,11 @@ class Call(ast.Call):
 
     @property
     def has_levels(self):
-        return False
+        return True
+
+    @property
+    def levels(self):
+        return self._function.meta.determine_levels(self.args)
 
 
 class BinOp(ast.BinOp):
