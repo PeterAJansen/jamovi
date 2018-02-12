@@ -4,6 +4,7 @@ import ast
 from inspect import signature
 from inspect import Parameter
 from types import FunctionType as function
+from collections import OrderedDict
 import math
 
 from jamovi.core import MeasureType
@@ -344,7 +345,20 @@ class Call(ast.Call):
 
     @property
     def levels(self):
-        return self._function.meta.determine_levels(self.args)
+        levels = self._function.meta.determine_levels(self.args)
+
+        level_use = OrderedDict()
+        for level in levels:
+            level_use[level] = 0
+
+        for value in self._parent.fvalues():
+            if value in level_use:
+                level_use[value] += 1
+
+        used_only = filter(lambda k: level_use[k] > 0, level_use)
+        levels = map(lambda level: (level, level), used_only)
+
+        return levels
 
 
 class BinOp(ast.BinOp):

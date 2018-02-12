@@ -60,9 +60,19 @@ class FuncMeta:
         if determine_m_type(args) is not MeasureType.NOMINAL_TEXT:
             return [ ]
 
+        levels = [ ]
+
+        for i in range(len(self._arg_level_indices)):
+            arg_i = self._arg_level_indices[i]
+            if arg_i < len(args):
+                arg = args[arg_i]
+                if arg.has_levels:
+                    levels.extend(arg.levels)
+
+        return levels
+
         level_use = OrderedDict()
 
-        types = [None] * len(self._arg_level_indices)
         for i in range(len(self._arg_level_indices)):
             arg_i = self._arg_level_indices[i]
             if arg_i < len(args):
