@@ -346,6 +346,9 @@ class Column:
         elif self.measure_type is MeasureType.NOMINAL_TEXT:
             ul_type = str
         else:
+            if self._node is not None and self._node.has_levels:
+                for level in self._node.levels:
+                    self._child.append_level(level[0], level[1])
             ul_type = int
 
         if self._node is None:

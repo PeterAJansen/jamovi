@@ -45,6 +45,10 @@ class Num(ast.Num):
             return MeasureType.CONTINUOUS
 
     @property
+    def has_levels(self):
+        return False
+
+    @property
     def needs_recalc(self):
         return False
 
@@ -77,6 +81,10 @@ class Str(ast.Str):
     @property
     def measure_type(self):
         return MeasureType.NOMINAL_TEXT
+
+    @property
+    def has_levels(self):
+        return False
 
     @property
     def needs_recalc(self):
@@ -142,6 +150,10 @@ class UnaryOp(ast.UnaryOp):
         else:
             return self.operand.measure_type
 
+    @property
+    def has_levels(self):
+        return False
+
     def _add_node_parent(self, node):
         self._node_parents.append(node)
 
@@ -200,6 +212,14 @@ class BoolOp(ast.BoolOp):
     @property
     def measure_type(self):
         return MeasureType.NOMINAL
+
+    @property
+    def has_levels(self):
+        return True
+
+    @property
+    def levels(self):
+        return ((0, 'FALSE'), (1, 'TRUE'))
 
     def _add_node_parent(self, node):
         self._node_parents.append(node)
@@ -322,6 +342,10 @@ class Call(ast.Call):
     def measure_type(self):
         return self._function.meta.determine_m_type(self.args)
 
+    @property
+    def has_levels(self):
+        return False
+
 
 class BinOp(ast.BinOp):
 
@@ -407,6 +431,10 @@ class BinOp(ast.BinOp):
         else:
             return MeasureType.ORDINAL
 
+    @property
+    def has_levels(self):
+        return False
+
     def _add_node_parent(self, node):
         self._node_parents.append(node)
 
@@ -489,6 +517,10 @@ class Compare(ast.Compare):
     @property
     def measure_type(self):
         return MeasureType.NOMINAL
+
+    @property
+    def has_levels(self):
+        return False
 
     def _add_node_parent(self, node):
         self._node_parents.append(node)

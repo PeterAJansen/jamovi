@@ -229,3 +229,13 @@ def VALUE(index, x: str):
 @returns(MeasureType.ORDINAL)
 def INT(index, x: str):
     return int(float(x))
+
+@row_wise
+@returns(MeasureType.NOMINAL, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29)
+def RECODE(index, *args):
+    for i in range(0, len(args), 2):
+        c = args[i]
+        v = args[i+1]
+        if c:
+            return v
+    return float('nan')
