@@ -11,6 +11,7 @@ class FuncMeta:
         self._parent = None
         self._measure_type = MeasureType.CONTINUOUS
         self._returns = [ ]
+        self._arg_level_indices = [ ]
 
     def __str__(self):
         return str({
@@ -61,9 +62,9 @@ class FuncMeta:
 
         level_use = OrderedDict()
 
-        types = [None] * len(self._returns)
-        for i in range(len(self._returns)):
-            arg_i = self._returns[i]
+        types = [None] * len(self._arg_level_indices)
+        for i in range(len(self._arg_level_indices)):
+            arg_i = self._arg_level_indices[i]
             if arg_i < len(args):
                 arg = args[arg_i]
                 if not arg.has_levels:
@@ -77,7 +78,7 @@ class FuncMeta:
 
         used_only = filter(lambda k: level_use[k] > 0, level_use)
         levels = map(lambda level: (level, level), used_only)
-        
+
         return levels
 
 
@@ -95,6 +96,12 @@ def returns(mt, *args):
         meta._returns = args
         return func
     return inner
+
+
+def levels(*args):
+    def inner(func):
+        meta = _meta(func)
+        meta._arg_level_indices = args
 
 
 # row function decorator

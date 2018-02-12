@@ -214,6 +214,7 @@ def FILTER(index, x, *conds: int):
 
 
 @row_wise
+@levels(0)
 @returns(MeasureType.NOMINAL_TEXT)
 def TEXT(index, x: str):
     return x
