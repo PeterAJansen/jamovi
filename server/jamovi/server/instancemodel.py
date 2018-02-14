@@ -53,6 +53,7 @@ class InstanceModel:
         column = self._dataset.append_column(name, import_name)
         column.column_type = ColumnType.NONE
         column.id = self._next_id
+        self._columns.append(column)
         self._next_id += 1
         return column
 

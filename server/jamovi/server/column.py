@@ -198,6 +198,11 @@ class Column:
             self._create_child()
         self._child.insert_level(raw, label, importValue)
 
+    def append_level(self, raw, label, importValue=None):
+        if self._child is None:
+            self._create_child()
+        self._child.append_level(raw, label, importValue)
+
     def get_label(self, value):
         if self._child is None:
             raise RuntimeError('Virtual columns have no labels')

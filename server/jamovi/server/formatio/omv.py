@@ -32,7 +32,7 @@ def write(data, path, html=None):
         content = None
 
         fields = [ ]
-        for column in data.dataset:
+        for column in data:
             field = { }
             field['name'] = column.name
             field['columnType'] = ColumnType.stringify(column.column_type)
@@ -49,8 +49,8 @@ def write(data, path, html=None):
         metadata = { }
 
         metadataset = { }
-        metadataset['rowCount'] = data.dataset.row_count
-        metadataset['columnCount'] = data.dataset.column_count
+        metadataset['rowCount'] = data.row_count
+        metadataset['columnCount'] = data.column_count
         metadataset['fields'] = fields
 
         if data.import_path is not '':
@@ -67,15 +67,15 @@ def write(data, path, html=None):
         metadata = None
 
         xdata = { }
-        for column in data.dataset:
+        for column in data:
             if column.has_levels:
                 xdata[column.name] = { 'labels': column.levels }
         zip.writestr('xdata.json', json.dumps(xdata), zipfile.ZIP_DEFLATED)
         xdata = None
 
-        row_count = data.dataset.row_count
+        row_count = data.row_count
         required_bytes = 0
-        for column in data.dataset:
+        for column in data:
             if column.measure_type == MeasureType.CONTINUOUS:
                 required_bytes += (8 * row_count)
             else:
@@ -84,7 +84,7 @@ def write(data, path, html=None):
         temp_file = NamedTemporaryFile(delete=False)
         temp_file.truncate(required_bytes)
 
-        for column in data.dataset:
+        for column in data:
             if column.measure_type == MeasureType.CONTINUOUS:
                 for i in range(0, row_count):
                     value = column.raw(i)
@@ -164,8 +164,7 @@ def read(data, path):
         for meta_column in meta_dataset['fields']:
             name = meta_column['name']
             import_name = meta_column.get('importName', name)
-            data.dataset.append_column(name, import_name)
-            column = data.dataset[data.dataset.column_count - 1]
+            column = data.append_column(name, import_name)
 
             column_type = ColumnType.parse(meta_column.get('columnType', 'Data'))
             column.column_type = column_type
@@ -176,7 +175,7 @@ def read(data, path):
 
         row_count = meta_dataset['rowCount']
 
-        data.dataset.set_row_count(row_count)
+        data.set_row_count(row_count)
 
         columns_w_bad_levels = [ ]  # do some repair work
 
@@ -184,7 +183,7 @@ def read(data, path):
             xdata_content = zip.read('xdata.json').decode('utf-8')
             xdata = json.loads(xdata_content)
 
-            for column in data.dataset:
+            for column in data:
                 if column.name in xdata:
                     try:
                         meta_labels = xdata[column.name]['labels']
@@ -210,7 +209,7 @@ def read(data, path):
             BUFF_SIZE = 65536
             buff = memoryview(bytearray(BUFF_SIZE))
 
-            for column in data.dataset:
+            for column in data:
 
                 if column.measure_type == MeasureType.CONTINUOUS:
                     elem_fmt = '<d'
@@ -244,7 +243,7 @@ def read(data, path):
 
             data_file.close()
 
-        for column in data.dataset:
+        for column in data:
             column.determine_dps()
 
         is_analysis = re.compile('^[0-9][0-9]+ .+/analysis$')
