@@ -47,6 +47,10 @@
     text-align: left;
 }
 
+.jmv-ribbon-group-body .jmv-ribbon-button {
+    padding: 5px 10px ;
+}
+
 /*huge button*/
 .jmv-ribbon-group-body .jmv-ribbon-button.jmv-ribbon-button-size-huge {
     width: 45px;
@@ -59,7 +63,6 @@
 /*large button*/
 .jmv-ribbon-group-body .jmv-ribbon-button.jmv-ribbon-button-size-large {
     width: 40px;
-    padding: 5px 0px;
 }
 
 .jmv-ribbon-group-body .jmv-ribbon-button-size-large .jmv-ribbon-button-icon {

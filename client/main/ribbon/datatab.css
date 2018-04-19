@@ -36,6 +36,10 @@
     background-image: url('assets/menu-variable-edit.svg');
 }
 
+.jmv-ribbon-button[data-name=compute] > .jmv-ribbon-button-icon {
+    background-image: url('assets/menu-compute.svg');
+}
+
 .jmv-ribbon-button[data-name=addvar] > .jmv-ribbon-button-icon {
     background-image: url('assets/menu-variable-add.svg');
 }

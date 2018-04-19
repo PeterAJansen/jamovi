@@ -479,6 +479,7 @@ const DataSetModel = Backbone.Model.extend({
                     let id = columnPB.id;
                     let column = this.getColumnById(id);
                     let oldName = column.name;
+                    let oldMessage = column.formulaMessage;
                     this._readColumnPB(column, columnPB);
 
                     changed.push(columnPB.name);
@@ -489,7 +490,9 @@ const DataSetModel = Backbone.Model.extend({
                         oldName: oldName,
                         columnType: columnPB.columnType,
                         dataChanged: true,
-                        nameChanged: oldName !== columnPB.name });
+                        nameChanged: oldName !== columnPB.name,
+                        formulaMessageChanged: oldMessage != columnPB.formulaMessage,
+                    });
                 }
             }
 
@@ -637,6 +640,7 @@ const DataSetModel = Backbone.Model.extend({
                     let created;
                     let oldName;
                     let oldColumnType;
+                    let oldMessage;
                     let hiddenChanged = false;
                     let activeChanged = false;
                     let oldDIndex = -1;
@@ -645,6 +649,7 @@ const DataSetModel = Backbone.Model.extend({
                         created = false;
                         oldName = column.name;
                         oldColumnType = column.columnType;
+                        oldMessage = column.formulaMessage;
                         oldDIndex = column.dIndex;
                         let oldHidden = column.hidden;
                         let oldActive = column.active;
@@ -656,6 +661,7 @@ const DataSetModel = Backbone.Model.extend({
                         created = true;
                         oldName = columnPB.name;
                         oldColumnType = 0;
+                        oldMessage = '';
                         column = { };
                         nCreated++;
                         this._readColumnPB(column, columnPB);
@@ -680,6 +686,7 @@ const DataSetModel = Backbone.Model.extend({
                         nameChanged: nameChanged,
                         dataChanged: true,
                         created: created,
+                        formulaMessageChanged: column.formulaMessage !== oldMessage,
                     };
 
                     if (hiddenChanged) {
@@ -941,6 +948,7 @@ const DataSetViewModel = DataSetModel.extend({
     defaults() {
         return _.extend({
             cells    : [ ],
+            filtered : [ ],
             viewport : { left : 0, top : 0, right : -1, bottom : -1 },
         }, DataSetModel.prototype.defaults);
     },
@@ -961,18 +969,13 @@ const DataSetViewModel = DataSetModel.extend({
         let nCols = viewport.right - viewport.left + 1;
         let nRows = viewport.bottom - viewport.top + 1;
 
-        let cells = Array(nCols);
+        let cells = new Array(nCols);
 
-        for (let i = 0; i < nCols; i++) {
-            let column = new Array(nRows);
-
-            for (let j = 0; j < nRows; j++)
-                column[j] = "" + (viewport.left + i) + ", " + (viewport.top + j);
-
-            cells[i] = column;
-        }
+        for (let i = 0; i < nCols; i++)
+            cells[i] = new Array(nRows);
 
         this.attributes.cells = cells;
+        this.attributes.filtered = new Array(nRows).fill(null);
         this.attributes.viewport = Object.assign({}, viewport);
 
         this.trigger("viewportChanged");
@@ -987,6 +990,7 @@ const DataSetViewModel = DataSetModel.extend({
 
         let viewport = this.attributes.viewport;
         let cells = this.attributes.cells;
+        let filtered = this.attributes.filtered;
         let delta = { left: left, top: top, right: right, bottom: bottom };
 
         let nv = Object.assign({}, viewport);
@@ -1016,6 +1020,8 @@ const DataSetViewModel = DataSetModel.extend({
                 for (let j = 0; j > top; j--)
                     column.shift();
             }
+            for (let j = 0; j > top; j--)
+                filtered.shift();
         }
         if (bottom < 0) {
             for (let i = 0; i < cells.length; i++) {
@@ -1023,6 +1029,8 @@ const DataSetViewModel = DataSetModel.extend({
                 for (let j = 0; j > bottom; j--)
                     column.pop();
             }
+            for (let j = 0; j > bottom; j--)
+                filtered.pop();
         }
 
         if (left > 0) {
@@ -1042,6 +1050,8 @@ const DataSetViewModel = DataSetModel.extend({
                 for (let j = 0; j < top; j++)
                     cells[i].unshift(".");
             }
+            for (let j = 0; j < top; j++)
+                filtered.unshift(null);
 
             this.readCells({ left : innerLeft, right : innerRight, top : nv.top, bottom : viewport.top });
         }
@@ -1050,6 +1060,8 @@ const DataSetViewModel = DataSetModel.extend({
                 for (let j = 0; j < bottom; j++)
                     cells[i].push(".");
             }
+            for (let j = 0; j < bottom; j++)
+                filtered.push(null);
 
             this.readCells({ left : innerLeft, right : innerRight, top : viewport.bottom, bottom : nv.bottom });
         }
@@ -1098,7 +1110,13 @@ const DataSetViewModel = DataSetModel.extend({
             cells[colNo] = values;
         }
 
-        return cells;
+
+        let filtered = response.filtered.toBuffer();
+        filtered = new Int8Array(filtered);
+        filtered = Array.from(filtered);
+        filtered = filtered.map(v => v ? true : false);
+
+        return { cells, filtered };
     },
     requestCells(viewport) {
 
@@ -1318,6 +1336,9 @@ const DataSetViewModel = DataSetModel.extend({
     },
     setCells(viewport, cells) {
 
+        let filtered = cells.filtered;
+        cells = cells.cells;
+
         let left   = Math.max(viewport.left,   this.attributes.viewport.left);
         let right  = Math.min(viewport.right,  this.attributes.viewport.right);
         let top    = Math.max(viewport.top,    this.attributes.viewport.top);
@@ -1340,6 +1361,10 @@ const DataSetViewModel = DataSetModel.extend({
             for (let j = 0; j < nRows; j++) {
                 outCol[outRowOffset + j] = inCol[inRowOffset + j];
             }
+        }
+
+        for (let j = 0; j < nRows; j++) {
+            this.attributes.filtered[outRowOffset + j] = filtered[inRowOffset + j];
         }
 
         this.trigger("cellsChanged", { left: left, top: top, right: right, bottom: bottom });
